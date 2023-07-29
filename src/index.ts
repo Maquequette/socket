@@ -1,15 +1,11 @@
 import { Server, Socket } from "socket.io";
 import * as http from "http";
-import { ChangeSet, Text } from "@codemirror/state";
-import { Document } from "./interface/Document";
-const server = http.createServer();
+import { pull } from "./controller/pull";
+import { document } from "./controller/document";
+import { edit } from "./controller/edit";
+import { push } from "./controller/push";
 
-let documents = new Map<string, Document>();
-documents.set("", {
-  updates: [],
-  pending: [],
-  doc: Text.of(["\n\n\nStarting doc!\n\n\n"]),
-});
+const server = http.createServer();
 
 let io = new Server(server, {
   path: "/api",
@@ -19,89 +15,14 @@ let io = new Server(server, {
   },
 });
 
-function getDocument(name: string): Document {
-  if (documents.has(name)) return documents.get(name)!;
+const onConnection = (socket: Socket) => {
+  pull(socket);
+  document(socket);
+  edit(socket);
+  push(socket);
+};
 
-  const documentContent: Document = {
-    updates: [],
-    pending: [],
-    doc: Text.of([`\n\n\nHello World from ${name}\n\n\n`]),
-  };
-
-  documents.set(name, documentContent);
-
-  return documentContent;
-}
-
-// listening for connections from clients
-io.on("connection", (socket: Socket) => {
-  socket.on("pullUpdates", (documentName, version: number) => {
-    try {
-      const { updates, pending, doc } = getDocument(documentName);
-
-      if (version < updates.length) {
-        socket.emit(
-          "pullUpdateResponse",
-          JSON.stringify(updates.slice(version))
-        );
-      } else {
-        pending.push((updates) => {
-          socket.emit(
-            "pullUpdateResponse",
-            JSON.stringify(updates.slice(version))
-          );
-        });
-        documents.set(documentName, { updates, pending, doc });
-      }
-    } catch (error) {
-      console.error("pullUpdates", error);
-    }
-  });
-
-  socket.on("pushUpdates", (documentName, version, docUpdates) => {
-    try {
-      let { updates, pending, doc } = getDocument(documentName);
-      docUpdates = JSON.parse(docUpdates);
-
-      if (version != updates.length) {
-        socket.emit("pushUpdateResponse", false);
-      } else {
-        for (let update of docUpdates) {
-          // Convert the JSON representation to an actual ChangeSet
-          // instance
-          let changes = ChangeSet.fromJSON(update.changes);
-          updates.push({
-            changes,
-            clientID: update.clientID,
-            effects: update.effects,
-          });
-          documents.set(documentName, { updates, pending, doc });
-          doc = changes.apply(doc);
-          documents.set(documentName, { updates, pending, doc });
-        }
-        socket.emit("pushUpdateResponse", true);
-
-        while (pending.length) pending.pop()!(updates);
-        documents.set(documentName, { updates, pending, doc });
-      }
-    } catch (error) {
-      console.error("pushUpdates", error);
-    }
-  });
-
-  socket.on("getDocument", (documentName) => {
-    try {
-      let { updates, doc } = getDocument(documentName);
-      socket.emit("getDocumentResponse", updates.length, doc.toString());
-    } catch (error) {
-      console.error("getDocument", error);
-    }
-  });
-
-  socket.on("edit", (params) => {
-    socket.emit("display", params);
-  });
-});
+io.on("connection", onConnection);
 
 const port = process.env.PORT || 8000;
 server.listen(port, () => console.log(`Server listening on port: ${port}`));
