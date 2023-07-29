@@ -9,7 +9,7 @@ export const getDocument = (name: string): Document => {
   const documentContent: Document = {
     updates: [],
     pending: [],
-    doc: "",
+    doc: Text.of([""]),
   };
   return documentContent;
 };
