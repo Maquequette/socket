@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Server, Socket } from "socket.io";
 import * as http from "http";
 import { pull } from "./controller/pull";
