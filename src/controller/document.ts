@@ -1,18 +1,15 @@
-import { Socket } from "socket.io";
-import { getDocument } from "../utils/Document";
+import { Server, Socket } from "socket.io";
+import { getTemplateByRoom } from "../utils/Files";
 
-export const document = (socket: Socket) => {
-  const get = (documentName: string) => {
+export const document = (socket: Socket, io: Server) => {
+  const get = (room: string, template: string) => {
     try {
-      const document = getDocument(documentName);
-      if (document) {
-        const { updates, doc } = document;
-        socket.emit("get:document:response", updates.length, doc.toString());
-      }
+      const { updates, files } = getTemplateByRoom(room, socket, template);
+      io.to(room).emit("get:document:response", updates.length, files);
     } catch (error) {
       console.error("get:document", error);
     }
   };
 
-  socket.on("document:get", get);
+  socket.on("get:document", get);
 };

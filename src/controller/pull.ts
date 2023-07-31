@@ -1,18 +1,15 @@
-import { Socket } from "socket.io";
-import { getDocument } from "../utils/Document";
+import { Server, Socket } from "socket.io";
+import { getTemplateByRoom } from "../utils/Files";
 
-export const pull = (socket: Socket) => {
-  const updates = (documentName: string, version: number) => {
+export const pull = (socket: Socket, io: Server) => {
+  const updates = (room: string, version: number, template: string) => {
     try {
-      const document = getDocument(documentName);
-      if (document) {
-        const { updates, pending, doc } = document;
-        if (version < updates.length) {
-          socket.emit(
-            "pull:updates:response",
-            JSON.stringify(updates.slice(version))
-          );
-        }
+      const { updates, pending, files } = getTemplateByRoom(room, socket);
+      if (version < updates.length) {
+        io.to(room).emit(
+          "pull:updates:response",
+          JSON.stringify(updates.slice(version))
+        );
       }
     } catch (error) {
       console.error("pull:updates", error);

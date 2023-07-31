@@ -3,7 +3,6 @@ import { Server, Socket } from "socket.io";
 import * as http from "http";
 import { pull } from "./controller/pull";
 import { document } from "./controller/document";
-import { edit } from "./controller/edit";
 import { push } from "./controller/push";
 
 const server = http.createServer();
@@ -17,10 +16,9 @@ let io = new Server(server, {
 });
 
 const onConnection = (socket: Socket) => {
-  pull(socket);
-  document(socket);
-  edit(socket);
-  push(socket);
+  pull(socket, io);
+  document(socket, io);
+  push(socket, io);
 };
 
 io.on("connection", onConnection);

@@ -1,4 +1,4 @@
-import { commonFiles } from "../common.js";
+import { commonFiles } from "../common";
 
 export const VITE_VUE_TS_TEMPLATE = {
   files: {

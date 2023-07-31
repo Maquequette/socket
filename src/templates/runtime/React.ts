@@ -5,7 +5,7 @@ export const REACT_TEMPLATE = {
     ...commonFiles,
     "/App.js": {
       code: `export default function App() {
-  return <h1>Hello world</h1>
+  return <h1>Bonjour world</h1>
 }
 `,
     },
