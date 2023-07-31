@@ -3,21 +3,25 @@ import { getTemplateByRoom, rooms } from "../utils/Files";
 import { ChangeSet, Text } from "@codemirror/state";
 
 export const push = (socket: Socket, io: Server) => {
-  const updates = (version: number, docUpdates: any, room: string) => {
+  const updates = (
+    version: number,
+    docUpdates: any,
+    room: string,
+    activeFile: string
+  ) => {
     try {
-      const { updates, pending, files } = getTemplateByRoom(room, socket);
-      docUpdates = JSON.parse(docUpdates);
-
+      let { updates, pending, files } = getTemplateByRoom(room, socket);
       if (version != updates.length) {
         io.to(room).emit("push:updates:response", false);
       } else {
-        for (let update of docUpdates) {
+        for (let update of JSON.parse(docUpdates)) {
           let changes = ChangeSet.fromJSON(update.changes);
           updates.push({
             changes,
             clientID: update.clientID,
             effects: update.effects,
           });
+          files.set(activeFile, changes.apply(files.get(activeFile)!));
           rooms.set(room, { updates, pending, files });
         }
         io.to(room).emit("push:updates:response", true);
