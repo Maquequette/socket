@@ -5,8 +5,7 @@ export const document = (socket: Socket, io: Server) => {
   const get = (room: string, template: string) => {
     try {
       const { updates, files } = getTemplateByRoom(room, socket, template);
-      console.log();
-      io.to(room).emit(
+      socket.emit(
         "get:document:response",
         updates.length,
         Object.fromEntries(files)

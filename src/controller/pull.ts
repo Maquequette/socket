@@ -6,13 +6,13 @@ export const pull = (socket: Socket, io: Server) => {
     try {
       const { updates, pending, files } = getTemplateByRoom(room, socket);
       if (version < updates.length) {
-        io.to(room).emit(
+        socket.emit(
           "pull:updates:response",
           JSON.stringify(updates.slice(version))
         );
       } else {
         pending.push((updates) => {
-          io.to(room).emit(
+          socket.emit(
             "pull:updates:response",
             JSON.stringify(updates.slice(version))
           );

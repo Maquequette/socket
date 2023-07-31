@@ -12,7 +12,7 @@ export const push = (socket: Socket, io: Server) => {
     try {
       let { updates, pending, files } = getTemplateByRoom(room, socket);
       if (version != updates.length) {
-        io.to(room).emit("push:updates:response", false);
+        socket.emit("push:updates:response", false);
       } else {
         for (let update of JSON.parse(docUpdates)) {
           let changes = ChangeSet.fromJSON(update.changes);
@@ -22,9 +22,8 @@ export const push = (socket: Socket, io: Server) => {
             effects: update.effects,
           });
           files.set(activeFile, changes.apply(files.get(activeFile)!));
-          rooms.set(room, { updates, pending, files });
         }
-        io.to(room).emit("push:updates:response", true);
+        socket.emit("push:updates:response", true);
         while (pending.length) pending.pop()!(updates);
         rooms.set(room, { updates, pending, files });
       }
