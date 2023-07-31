@@ -2,9 +2,9 @@ import { Server, Socket } from "socket.io";
 import { getTemplateByRoom } from "../utils/Files";
 
 export const pull = (socket: Socket, io: Server) => {
-  const updates = (room: string, version: number, template: string) => {
+  const updates = (version: number, room: string) => {
     try {
-      const { updates, pending, files } = getTemplateByRoom(room, socket);
+      const { updates } = getTemplateByRoom(room, socket);
       if (version < updates.length) {
         io.to(room).emit(
           "pull:updates:response",

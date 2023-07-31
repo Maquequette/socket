@@ -5,17 +5,22 @@ import { SANDBOX_TEMPLATES } from "../templates";
 export const rooms = new Map<string, Document>();
 
 export const getTemplateByRoom = (
-  room: string,
+  room: string = "",
   socket: Socket,
   template: string = ""
 ): Document => {
+  if (!socket.rooms.has(room)) {
+    socket.join(room);
+  }
+
   if (rooms.has(room)) return rooms.get(room)!;
+
   const documentContent: Document = {
     updates: [],
     pending: [],
     files: SANDBOX_TEMPLATES[template],
   };
-  socket.join(room);
   rooms.set(room, documentContent);
+
   return documentContent;
 };
