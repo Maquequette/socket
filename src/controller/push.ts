@@ -24,7 +24,6 @@ export const push = (socket: Socket, io: Server) => {
             effects: update.effects,
           });
           files.get(activeFile)!.code = changes.apply(code);
-          rooms.set(room, { files });
         }
         socket.emit("push:updates:response", true);
         while (pending.length) pending.pop()!(updates);
