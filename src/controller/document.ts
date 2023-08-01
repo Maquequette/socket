@@ -2,9 +2,10 @@ import { Server, Socket } from "socket.io";
 import { getTemplateByRoom } from "../utils/Files";
 
 export const document = (socket: Socket, io: Server) => {
-  const get = (room: string, template: string) => {
+  const get = (room: string, template: string, activeFile: string) => {
     try {
-      const { updates, files } = getTemplateByRoom(room, socket, template);
+      const { files } = getTemplateByRoom(room, socket, template);
+      const { updates } = files.get(activeFile)!;
       socket.emit(
         "get:document:response",
         updates.length,

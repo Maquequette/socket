@@ -2,7 +2,12 @@ import { Update } from "@codemirror/collab";
 import { Text } from "@codemirror/state";
 
 export interface Document {
-  updates: Update[];
-  files: Map<string, Text>;
-  pending: ((value: any) => void)[];
+  files: Map<
+    string,
+    {
+      code: Text;
+      updates: Update[];
+      pending: ((value: any) => void)[];
+    }
+  >;
 }

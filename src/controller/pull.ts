@@ -1,10 +1,13 @@
 import { Server, Socket } from "socket.io";
 import { getTemplateByRoom, rooms } from "../utils/Files";
+import { FILE } from "dns";
 
 export const pull = (socket: Socket, io: Server) => {
-  const updates = (version: number, room: string) => {
+  const updates = (version: number, room: string, activeFile: string) => {
     try {
-      const { updates, pending, files } = getTemplateByRoom(room, socket);
+      const { files } = getTemplateByRoom(room, socket);
+      const { updates, pending } = files.get(activeFile)!;
+
       if (version < updates.length) {
         socket.emit(
           "pull:updates:response",
@@ -17,7 +20,7 @@ export const pull = (socket: Socket, io: Server) => {
             JSON.stringify(updates.slice(version))
           );
         });
-        rooms.set(room, { updates, pending, files });
+        rooms.set(room, { files });
       }
     } catch (error) {
       console.error("pull:updates", error);

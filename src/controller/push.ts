@@ -10,7 +10,9 @@ export const push = (socket: Socket, io: Server) => {
     activeFile: string
   ) => {
     try {
-      let { updates, pending, files } = getTemplateByRoom(room, socket);
+      let { files } = getTemplateByRoom(room, socket);
+      const { updates, pending, code } = files.get(activeFile)!;
+
       if (version != updates.length) {
         socket.emit("push:updates:response", false);
       } else {
@@ -21,11 +23,12 @@ export const push = (socket: Socket, io: Server) => {
             clientID: update.clientID,
             effects: update.effects,
           });
-          files.set(activeFile, changes.apply(files.get(activeFile)!));
+          files.get(activeFile)!.code = changes.apply(code);
+          rooms.set(room, { files });
         }
         socket.emit("push:updates:response", true);
         while (pending.length) pending.pop()!(updates);
-        rooms.set(room, { updates, pending, files });
+        rooms.set(room, { files });
       }
     } catch (error) {
       console.error("push:updates", error);

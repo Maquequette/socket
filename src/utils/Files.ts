@@ -2,6 +2,7 @@ import { Document } from "../interface/Document";
 import { Socket } from "socket.io";
 import { SANDBOX_TEMPLATES } from "../templates";
 import { Text } from "@codemirror/state";
+import { Update } from "@codemirror/collab";
 
 export const rooms = new Map<string, Document>();
 
@@ -16,18 +17,27 @@ export const getTemplateByRoom = (
 
   if (rooms.has(room)) return rooms.get(room)!;
 
-  let files = new Map<string, Text>();
+  let files = new Map<
+    string,
+    {
+      code: Text;
+      updates: Update[];
+      pending: [];
+    }
+  >();
 
   Object.entries(SANDBOX_TEMPLATES[template].files).forEach(
     (entry: [any, any]) => {
       const [key, value] = entry;
-      files.set(key, Text.of([value.code]));
+      files.set(key, {
+        code: Text.of([value.code]),
+        updates: [],
+        pending: [],
+      });
     }
   );
 
   const documentContent: Document = {
-    updates: [],
-    pending: [],
     files,
   };
 
