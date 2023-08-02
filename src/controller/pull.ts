@@ -19,6 +19,11 @@ export const pull = (socket: Socket, io: Server) => {
             JSON.stringify(updates.slice(version))
           );
         });
+        files.set(activeFile, {
+          updates,
+          pending,
+          code,
+        });
         rooms.set(room, { files });
       }
     } catch (error) {
