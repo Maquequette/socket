@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { getTemplateByRoom, rooms } from "../utils/Files";
-import { ChangeSet, Text } from "@codemirror/state";
+import { ChangeSet } from "@codemirror/state";
 
 export const push = (socket: Socket, io: Server) => {
   const updates = (
@@ -23,7 +23,12 @@ export const push = (socket: Socket, io: Server) => {
             clientID: update.clientID,
             effects: update.effects,
           });
-          files.get(activeFile)!.code = changes.apply(code);
+          files.set(activeFile, {
+            code: changes.apply(code),
+            updates,
+            pending,
+          });
+          rooms.set(room, { files });
         }
         socket.emit("push:updates:response", true);
         while (pending.length) pending.pop()!(updates);

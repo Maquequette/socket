@@ -1,12 +1,11 @@
 import { Server, Socket } from "socket.io";
 import { getTemplateByRoom, rooms } from "../utils/Files";
-import { FILE } from "dns";
 
 export const pull = (socket: Socket, io: Server) => {
   const updates = (version: number, room: string, activeFile: string) => {
     try {
       const { files } = getTemplateByRoom(room, socket);
-      const { updates, pending } = files.get(activeFile)!;
+      const { updates, pending, code } = files.get(activeFile)!;
 
       if (version < updates.length) {
         socket.emit(
