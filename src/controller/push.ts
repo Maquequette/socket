@@ -28,14 +28,6 @@ export const push = (socket: Socket, io: Server) => {
             updates,
             pending,
           });
-          rooms.set(room, { files });
-
-          files.set(activeFile, {
-            code: changes.apply(code),
-            updates,
-            pending,
-          });
-          rooms.set(room, { files });
         }
         socket.emit("push:updates:response", true);
         while (pending.length) {
@@ -46,7 +38,6 @@ export const push = (socket: Socket, io: Server) => {
           updates,
           pending,
         });
-        rooms.set(room, { files });
       }
     } catch (error) {
       console.error("push:updates", error);

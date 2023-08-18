@@ -24,7 +24,6 @@ export const pull = (socket: Socket, io: Server) => {
           pending,
           code,
         });
-        rooms.set(room, { files });
       }
     } catch (error) {
       console.error("pull:updates", error);
