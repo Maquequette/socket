@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { getTemplateByRoom, rooms } from "../utils/Files";
+import { getTemplateByRoom } from "../utils/Files";
 
 export const pull = (socket: Socket, io: Server) => {
   const updates = (version: number, room: string, activeFile: string) => {
@@ -10,15 +10,18 @@ export const pull = (socket: Socket, io: Server) => {
       if (version < updates.length) {
         socket.emit(
           "pull:updates:response",
-          JSON.stringify(updates.slice(version))
+          JSON.stringify(updates.slice(version)),
+          Object.fromEntries(files)
         );
       } else {
         pending.push((updates) => {
           socket.emit(
             "pull:updates:response",
-            JSON.stringify(updates.slice(version))
+            JSON.stringify(updates.slice(version)),
+            Object.fromEntries(files)
           );
         });
+
         files.set(activeFile, {
           updates,
           pending,

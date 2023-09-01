@@ -11,9 +11,7 @@ export const getTemplateByRoom = (
   socket: Socket,
   template: string = ""
 ): Document => {
-  if (!socket.rooms.has(room)) {
-    socket.join(room);
-  }
+  if (!socket.rooms.has(room)) socket.join(room);
 
   if (rooms.has(room)) return rooms.get(room)!;
 
@@ -22,11 +20,11 @@ export const getTemplateByRoom = (
     {
       code: Text;
       updates: Update[];
-      pending: [];
+      pending: ((value: any) => void)[];
     }
   >();
 
-  Object.entries(SANDBOX_TEMPLATES[template].files).forEach(
+  Object.entries(SANDBOX_TEMPLATES[template]?.files).forEach(
     (entry: [any, any]) => {
       const [key, value] = entry;
       files.set(key, {
@@ -41,7 +39,7 @@ export const getTemplateByRoom = (
     files,
   };
 
-  rooms.set(room, documentContent);
+  rooms.set(room, { files });
 
   return documentContent;
 };

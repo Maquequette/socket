@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
-import { getTemplateByRoom, rooms } from "../utils/Files";
 import { ChangeSet } from "@codemirror/state";
+import { Update, rebaseUpdates } from "@codemirror/collab";
+import { getTemplateByRoom } from "../utils/Files";
 
 export const push = (socket: Socket, io: Server) => {
   const updates = (
@@ -11,28 +12,37 @@ export const push = (socket: Socket, io: Server) => {
   ) => {
     try {
       let { files } = getTemplateByRoom(room, socket);
-      const { updates, pending, code } = files.get(activeFile)!;
+      let { updates, pending, code } = files.get(activeFile)!;
+
+      let received = JSON.parse(docUpdates).map((update: Update) => ({
+        clientID: update.clientID,
+        changes: ChangeSet.fromJSON(update.changes),
+        effects: update.effects,
+      }));
 
       if (version != updates.length) {
+        received = rebaseUpdates(received, updates.slice(version));
         socket.emit("push:updates:response", false);
-      } else {
-        for (let update of JSON.parse(docUpdates)) {
-          let changes = ChangeSet.fromJSON(update.changes);
-          updates.push({
-            changes,
-            clientID: update.clientID,
-            effects: update.effects,
-          });
-          files.set(activeFile, {
-            code,
-            updates,
-            pending,
-          });
-        }
-        socket.emit("push:updates:response", true);
-        while (pending.length) {
-          pending.pop()!(updates);
-        }
+      }
+
+      for (let update of received) {
+        updates.push(update);
+        files.set(activeFile, { code, updates, pending });
+        code = update.changes.apply(code);
+        files.set(activeFile, { code, updates, pending });
+      }
+
+      socket.emit("push:updates:response", true);
+
+      if (received.length) {
+        let updates = received.map((update: Update) => ({
+          clientID: update.clientID,
+          changes: update.changes.toJSON(),
+          effects: update.effects,
+        }));
+
+        while (pending.length) pending.pop()!(updates);
+
         files.set(activeFile, {
           code,
           updates,
