@@ -6,7 +6,7 @@ import { Update } from "@codemirror/collab";
 
 export const rooms = new Map<string, Document>();
 
-export const getTemplateByRoom = (
+export const getFilesByRoom = (
   room: string = "",
   socket: Socket,
   template: string = ""

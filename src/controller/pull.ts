@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
-import { getTemplateByRoom } from "../utils/Files";
+import { getFilesByRoom } from "../utils/Files";
 
 export const pull = (socket: Socket, io: Server) => {
   const updates = (version: number, room: string, activeFile: string) => {
     try {
-      const { files } = getTemplateByRoom(room, socket);
+      const { files } = getFilesByRoom(room, socket);
       const { updates, pending, code } = files.get(activeFile)!;
 
       if (version < updates.length) {
